@@ -1,9 +1,3 @@
-Voici le README mis à jour en anglais, sans la mention de l'association 2'Danse.
-
-Voici toutes les informations que vous m'avez demandé d'enregistrer. Si vous souhaitez modifier vos paramètres, vous pouvez le faire sur la page [informations enregistrées](https://gemini.google.com/saved-info).
-
----
-
 # 🕒 Python Clock Project
 
 This Python project is an interactive time-management application. It displays time in a `hh:mm:ss` format, allowing users to synchronize with the system clock, manually set a starting time, and configure an alarm.
