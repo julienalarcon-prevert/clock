@@ -15,4 +15,13 @@ def display_menu():
 def config_time():
     return
 
-def display
+def display_clock():
+    return
+
+def config_alarme():
+    return
+
+def main():
+    horloge = Clock()
+
+    
