@@ -1,17 +1,23 @@
 import time
-import msvcrt
 from datetime import datetime
 from playsound import playsound
+from pynput import keyboard
 
+def on_press(key):
+    try:
+        if key.char == 'q':
+            return False
+    except AttributeError:
+        pass
 
 def get_hour_sys():
-    heure_now = datetime.now()
-    return (heure_now.hour, heure_now.minute, heure_now.second)
+    hour_now = datetime.now()
+    return (hour_now.hour, hour_now.minute, hour_now.second)
 
-def suivant(heure):
-    h = heure[0]
-    m = heure[1]
-    s = heure[2]
+def next(hour):
+    h = hour[0]
+    m = hour[1]
+    s = hour[2]
     s = s + 1
     if s == 60:
         s = 0 
@@ -21,81 +27,92 @@ def suivant(heure):
             h += 1
             if h == 24:
                 h = 0 
-    new_heure = (h, m , s)
-    return new_heure
+    new_hour = (h, m , s)
+    return new_hour
 
-def print_heure(heure):
-    h, m, s = heure
+def print_hour(hour):
+    h, m, s = hour
     affichage = f"{h:02d}:{m:02d}:{s:02d}"
     print(f"\r >>> [ {affichage} ] <<< ", end = "", flush=True)
 
-def choose_heure():
+def choose_hour():
     while True:
         try:
-            h = int(input("Heure (0-23): "))
+            h = int(input("hour (0-23): "))
             m = int(input("Minute (0-60): "))
             s = int(input("Seconde (0-60): "))
             
             if 0 <= h < 24 and 0 <= m < 60 and 0 <= s < 60:
                 return (h, m, s)
             else : 
-                print("ERREUR : Valeurs impossibles ! Merci de respecter les indications")
+                print("ERREUR : Value impossible ! please respect the instructions")
                 
         except ValueError:
-            print("Erreur : Veuillez entrer uniquement des nombres entiers")
-
+            print("Erreur : Enter only numbers")
 
 def main(hour_start, hour_alarme):
-    heure_actuelle = hour_start
-    print("\nHorloge lancée. Appuyez sur 'q' pour quitter.")
+    hour_actuelle = hour_start
+    print("\nClock is ready press 'q' for stop the clock.")
     
-    while True:
-        print_heure(heure_actuelle)
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+    
+    while listener.running:
+        print_hour(hour_actuelle)
         
         if hour_alarme is not None:
-            if heure_actuelle == hour_alarme:
+            if hour_actuelle == hour_alarme:
                 print("\nBIP BIP BIP !")
                 playsound(r"D:\plateforme\clock\reveil.mp3", block=False)
+                
+                print("Do you want to set up a new alarm ? : (o-n)")
+                time.sleep(3)
+                choose = input("(o-n)")
+                
+                if choose == "o" :
+                    hour_alarme = choose_hour()
+                    print("New alarm set up")
+                    print("\nPress 'q' for leave.")
+                else : 
+                    hour_alarme = None
+                    print("Alarm desable")
+                    print("\nPress 'q' for leave.")
         
-        heure_actuelle = suivant(heure_actuelle)
-        
-        if msvcrt.kbhit():
-            if msvcrt.getch().decode('utf-8').lower() == 'q':
-                print("\nArrêt du programme.")
-                break
+        hour_actuelle = next(hour_actuelle)
         time.sleep(1)
-        
+    
+    print("\nArrêt du programme.")
+
 def start_menu ():
     while True:
-        print("\n Bonjour, bonsoir et bienvenue dans l'horloge de mamie, ici vous aurez une horloge en temps réel")
-        #time.sleep(5)
-        print("\n premièrement vous aurez le choix d'utiliser l'heure actuelle ou de la personnaliser")
-        #time.sleep(3)
-        print("\n1. Utilisation de l'heure système | 2. Utilisation d'une heure personnalisée")
-        choix = input("Votre choix : ")
+        print("\n Hello and welcome in the grandma's clock, here we will have a clock in real time") 
+        time.sleep(5)
+        print("\n Firstly, you will have the choice of using the current time or customizing it.")
+        time.sleep(3)
+        print("\n1. Using the system time | 2. Using a custom time")
+        choix = input("Your choise : ")
 
         if choix == "1":
             return get_hour_sys()
         elif choix == "2":
-            print("--- REGLAGE HEURE DEPART ---")
-            return choose_heure()
+            print("--- SET UP HOUR START ---")
+            return choose_hour()
         else : 
-            print("ERREUR : Veuillez entrer seulement 1 ou 2")
+            print("ERROR : Enter only 1 or 2")
 
 def alarm_menu ():
     while True:
-        print("\n Maintenant vous allez avoir le choix de régler une alarme ou non")
+        print("\n Now you will have the choice of setting an alarm or not.")
         time.sleep(3)
-        activer_alarme = input("Voulez vous régler une horloge ? (o-n): ").lower()
+        activer_alarme = input("Do you want to set a clock? (o-n): ").lower()
 
         if activer_alarme == "o":
-            print("--- REGLAGE ALARME ---")
-            return choose_heure()
+            print("--- SET UP ALARME ---")
+            return choose_hour()
         elif activer_alarme == "n":
-            alarme = None
             return None
         else :
-            print("ERREUR : Répondez par 'o' ou par 'n'.")            
+            print("ERROR : Answer with 'o' or 'n'.")            
 
 def start_program():
     start = start_menu()
