@@ -15,9 +15,7 @@ def get_hour_sys():
     return (hour_now.hour, hour_now.minute, hour_now.second)
 
 def next(hour):
-    h = hour[0]
-    m = hour[1]
-    s = hour[2]
+    h , m , s = hour
     s = s + 1
     if s == 60:
         s = 0 
@@ -46,7 +44,6 @@ def choose_hour():
                 return (h, m, s)
             else : 
                 print("ERREUR : Value impossible ! please respect the instructions")
-                
         except ValueError:
             print("Erreur : Enter only numbers")
 
@@ -81,7 +78,7 @@ def main(hour_start, hour_alarme):
         hour_actuelle = next(hour_actuelle)
         time.sleep(1)
     
-    print("\nArrêt du programme.")
+    print("\nSTOP PROGRAM")
 
 def start_menu ():
     while True:
@@ -115,8 +112,9 @@ def alarm_menu ():
             print("ERROR : Answer with 'o' or 'n'.")            
 
 def start_program():
-    start = start_menu()
     alarm = alarm_menu()
+    start = start_menu()
+    
     
     main(start, alarm)
 
