@@ -1,121 +1,161 @@
-import time
 from datetime import datetime
-from pynput import keyboard
+import time
 
-def on_press(key):
-    try:
-        if key.char == 'q':
-            return False
-    except AttributeError:
-        pass
+# Global variables
+manual_hour = 0
+manual_minute = 0
+manual_second = 0
+alarm_time = None
+alarm_active = False
+
+def display_menu():
+    print("\n" + "="*40)
+    print("1. Display Clock")
+    print("2. Set Time")
+    print("3. Set Alarm")
+    print("4. Quit")
+    print("="*40)
 
 def get_hour_sys():
-    hour_now = datetime.now()
-    return (hour_now.hour, hour_now.minute, hour_now.second)
+    now = datetime.now()
+    time_tuple = (now.hour, now.minute, now.second)
+    return time_tuple
 
-def next(hour):
-    h , m , s = hour
-    s = s + 1
-    if s == 60:
-        s = 0 
+def format_time(h, m, s):
+    """Format time as HH:MM:SS"""
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+def increment_time(h, m, s):
+    """Increment time by 1 second (like clock.py)"""
+    s += 1
+    if s >= 60:
+        s = 0
         m += 1
-        if m == 60:
+        if m >= 60:
             m = 0
             h += 1
-            if h == 24:
-                h = 0 
-    new_hour = (h, m , s)
-    return new_hour
+            if h >= 24:
+                h = 0
+    return (h, m, s)
 
-def print_hour(hour):
-    h, m, s = hour
-    affichage = f"{h:02d}:{m:02d}:{s:02d}"
-    print(f"\r >>> [ {affichage} ] <<< ", end = "", flush=True)
-
-def choose_hour():
+def set_time():
+    global manual_hour, manual_minute, manual_second, alarm_time, alarm_active
+    
+    print("\nSet Manual Time")
     while True:
         try:
-            h = int(input("hour (0-23): "))
-            m = int(input("Minute (0-60): "))
-            s = int(input("Seconde (0-60): "))
+            h = int(input("Hour (0-23): "))
+            m = int(input("Minute (0-59): "))
+            s = int(input("Second (0-59): "))
             
             if 0 <= h < 24 and 0 <= m < 60 and 0 <= s < 60:
-                return (h, m, s)
+                # Set manual time using simple variables
+                manual_hour = h
+                manual_minute = m
+                manual_second = s
+                print(f"Manual time set to: {format_time(h, m, s)}")
+                
+                # Display the manual time after setting it
+                print("\nDisplaying manual time (Ctrl+C to stop)...")
+                try:
+                    while True:
+                        print(f"\rTime: {format_time(manual_hour, manual_minute, manual_second)}", end='', flush=True)
+                        
+                        # Check alarm with manual time
+                        if alarm_time and alarm_active:
+                            if manual_hour == alarm_time[0] and manual_minute == alarm_time[1] and manual_second == alarm_time[2]:
+                                print("\n\n" + "="*50)
+                                print("Biiiiiiip x)")
+                                print(f"Alarm time: {format_time(manual_hour, manual_minute, manual_second)}")
+                                print("="*50 + "\n")
+                                alarm_active = False
+                                alarm_time = None
+                        
+                        # Increment time by 1 second (like clock.py)
+                        manual_hour, manual_minute, manual_second = increment_time(manual_hour, manual_minute, manual_second)
+                        
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    print("\n\nDisplay stopped.")
+                
+                return
             else : 
-                print("ERREUR : Value impossible ! please respect the instructions")
+                print("ERROR: Invalid value! Please follow the instructions")
                 
         except ValueError:
-            print("Erreur : Enter only numbers")
+            print("Error: Enter only numbers")
 
-def main(hour_start, hour_alarme):
-    hour_actuelle = hour_start
-    print("\nClock is ready press 'q' for stop the clock.")
+def display_time():
+    global alarm_time, alarm_active
     
-    listener = keyboard.Listener(on_press=on_press)
-    listener.start()
+    # Always display system time
+    print("\nDisplaying system time (Ctrl+C to stop)...")
     
-    while listener.running:
-        print_hour(hour_actuelle)
-        
-        if hour_alarme is not None:
-            if hour_actuelle == hour_alarme:
-                print("\nBIP BIP BIP !")
-                
-                print("Do you want to set up a new alarm ? : (o-n)")
-                time.sleep(3)
-                choose = input("(o-n)")
-                
-                if choose == "o" :
-                    hour_alarme = choose_hour()
-                    print("New alarm set up")
-                    print("\nPress 'q' for leave.")
-                else : 
-                    hour_alarme = None
-                    print("Alarm desable")
-                    print("\nPress 'q' for leave.")
-        
-        hour_actuelle = next(hour_actuelle)
-        time.sleep(1)
-    
-    print("\nArrêt du programme.")
+    try:
+        while True:
+            h, m, s = get_hour_sys()
+            print(f"\rTime: {format_time(h, m, s)}", end='', flush=True)
+            
+            # Check alarm with system time
+            if alarm_time and alarm_active:
+                if h == alarm_time[0] and m == alarm_time[1] and s == alarm_time[2]:
+                    print("\n\n" + "="*50)
+                    print("Biiiiiiip x)")
+                    print(f"Alarm time: {format_time(h, m, s)}")
+                    print("="*50 + "\n")
+                    alarm_active = False
+                    alarm_time = None
+            
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n\nDisplay stopped.")
 
-def start_menu ():
+def set_alarm():
+    global alarm_time, alarm_active
+    
+    print("\nSet Alarm")
     while True:
-        print("\n Hello and welcome in the grandma's clock, here we will have a clock in real time") 
-        time.sleep(5)
-        print("\n Firstly, you will have the choice of using the current time or customizing it.")
-        time.sleep(3)
-        print("\n1. Using the system time | 2. Using a custom time")
-        choix = input("Your choise : ")
+        try:
+            h = int(input("Hour (0-23): "))
+            m = int(input("Minute (0-59): "))
+            s = int(input("Second (0-59): "))
+            
+            if 0 <= h < 24 and 0 <= m < 60 and 0 <= s < 60:
+                alarm_time = (h, m, s)
+                alarm_active = True
+                print(f"Alarm set for: {format_time(h, m, s)}")
+                return
+            else : 
+                print("ERROR: Invalid value! Please follow the instructions")
+                
+        except ValueError:
+            print("Error: Enter only numbers")
 
-        if choix == "1":
-            return get_hour_sys()
-        elif choix == "2":
-            print("--- SET UP HOUR START ---")
-            return choose_hour()
-        else : 
-            print("ERROR : Enter only 1 or 2")
-
-def alarm_menu ():
+def main():
+    print("Clock Application Started!")
+    
     while True:
-        print("\n Now you will have the choice of setting an alarm or not.")
-        time.sleep(3)
-        activer_alarme = input("Do you want to set a clock? (o-n): ").lower()
+        display_menu()
+        
+        try:
+            choice = int(input("Enter your choice: "))
+            
+            if choice == 1:
+                display_time()
+            elif choice == 2:
+                set_time()
+            elif choice == 3:
+                set_alarm()
+            elif choice == 4:
+                print("Stopped by user")
+                return
+            else:
+                print("Oops wrong choice!")
+        
+        except KeyboardInterrupt:
+            print("\n\nStopped by user")
+            return
 
-        if activer_alarme == "o":
-            print("--- SET UP ALARME ---")
-            return choose_hour()
-        elif activer_alarme == "n":
-            return None
-        else :
-            print("ERROR : Answer with 'o' or 'n'.")            
-
-def start_program():
-    alarm = alarm_menu()
-    start = start_menu()
-    
-    
-    main(start, alarm)
 
 if __name__ == "__main__":
-    start_program()
+    main()
