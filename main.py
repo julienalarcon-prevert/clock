@@ -7,19 +7,30 @@ import start_menu
 from playsound import playsound
 
 new_alarm_val = None
+new_start_val = None
 is_typing = False
+
+def hour_input_worker():
+    global new_start_val, is_typing
+    is_typing = True
+    print("\n\n--- SET UP NEW CURRENT TIME ---")
+    new_start_val = print_heure.choose_hour()
+    is_typing = False
+    print("\nTime updated! Press 'a' for alarm, 'n' for time, 'q' to quit.")
 
 def alarm_input_worker():
     global new_alarm_val, is_typing
     is_typing = True
-    print("\n\n--- ALARM SETTINGS ---")
+    print("\n\n--- SET UP NEW ALARM ---")
     new_alarm_val = print_heure.choose_hour()
     is_typing = False
+    print("\nAlarm set! Press 'a' for alarm, 'n' for time, 'q' to quit.")
 
 def main(hour_alarme, hour_start):
-    global new_alarm_val, is_typing
+    global new_alarm_val, new_start_val, is_typing
     
     current_alarme = hour_alarme
+    
     now = datetime.now()
     start_dt = now.replace(hour=hour_start[0], minute=hour_start[1], second=hour_start[2], microsecond=0)
     launch_moment = datetime.now()
@@ -29,21 +40,30 @@ def main(hour_alarme, hour_start):
         try:
             if key.char == 'q':
                 return False
-            if key.char == 'a' and not is_typing:
-                t = threading.Thread(target=alarm_input_worker, daemon=True)
-                t.start()
+            if not is_typing:
+                if key.char == 'a':
+                    threading.Thread(target=alarm_input_worker, daemon=True).start()
+                if key.char == 'n':
+                    threading.Thread(target=hour_input_worker, daemon=True).start()
         except AttributeError:
             pass
 
     listener = keyboard.Listener(on_press=on_press)
     listener.start()
 
+    print("\nClock is running...")
+
     while listener.running:
+        if new_start_val is not None:
+            now = datetime.now()
+            start_dt = now.replace(hour=new_start_val[0], minute=new_start_val[1], second=new_start_val[2], microsecond=0)
+            launch_moment = datetime.now()
+            new_start_val = None
+
         elapsed = datetime.now() - launch_moment
         current_time_dt = start_dt + elapsed
         
-        h, m, s = current_time_dt.hour, current_time_dt.minute, current_time_dt.second
-        current_tuple = (h, m, s)
+        current_tuple = (current_time_dt.hour, current_time_dt.minute, current_time_dt.second)
 
         if new_alarm_val is not None:
             current_alarme = new_alarm_val
@@ -54,13 +74,15 @@ def main(hour_alarme, hour_start):
 
         if current_alarme is not None and current_tuple == current_alarme:
             print("\n!!! BIP BIP BIP !!!")
-            playsound(r"D:\plateforme\clock\reveil.mp3", block=False)
+            try:
+                playsound(r"D:\plateforme\clock\reveil.mp3", block=False)
+            except:
+                print("(Sound Error: check your file path)")
             current_alarme = None
 
         time.sleep(0.1)
 
     print("\nSTOP PROGRAM")
-    
 
 def start_program():
     alarm = start_menu.alarm_menu()

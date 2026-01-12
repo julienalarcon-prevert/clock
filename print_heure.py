@@ -32,7 +32,7 @@ def next(hour):
 def print_hour(hour):
     h, m, s = hour
     affichage = f"{h:02d}:{m:02d}:{s:02d}"
-    print(f"\r >>> [ {affichage} ] <<< | 'a' : Alarme | 'q' : Quitter ", end="", flush=True)
+    print(f"\r >>> [ {affichage} ] <<< | 'a' : Alarm | 'q' : EXIT | 'a' : New hour", end="", flush=True)
 
 def choose_hour():
     while True:
