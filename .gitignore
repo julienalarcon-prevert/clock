@@ -1,0 +1,10 @@
+# Ignorer le dossier de configuration VS Code
+.vscode/
+
+# Ignorer les fichiers de cache Python (peu importe où ils sont)
+**/__pycache__/
+*.py[cod]
+
+# Si tu as créé un environnement virtuel (optionnel mais conseillé)
+venv/
+.env
