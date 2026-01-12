@@ -1,7 +1,4 @@
 import time
-from datetime import datetime
-from playsound import playsound
-from pynput import keyboard
 import print_heure
 
 def alarm_menu ():
