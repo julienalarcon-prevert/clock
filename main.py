@@ -128,7 +128,7 @@ def set_alarm():
             else : 
                 print("ERROR: Invalid value! Please follow the instructions")
                 
-        except ValueError:
+        except :
             print("Error: Enter only numbers")
 
 def main():
